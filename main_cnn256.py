@@ -1,9 +1,11 @@
 from pathlib import Path
+import torch
 from src.utils.seed import set_global_seed
 from src.data.download import download_raw_dataset
 from src.data.build import build_working_data
 from src.data.compute_stats import compute_mean_std
 from src.data.loaders import get_dataloaders
+from src.utils.class_weights import compute_class_weights
 
 
 def main():
@@ -54,6 +56,17 @@ def main():
     print("\nDataloaders pronti!")
     print("Classi:", class_names)
     print("Sizes:", dataset_sizes)
+
+    print("\n===============================")
+    print(" 5) CLASS WEIGHTS")
+    print("===============================")
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    train_dataset = dataloaders["train"].dataset
+    class_weights = compute_class_weights(train_dataset, device)
+
+    print("Class weights:", class_weights)
 
     print("\n Pipeline completata! Pronto per il training.")
 
