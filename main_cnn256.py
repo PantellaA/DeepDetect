@@ -1,4 +1,5 @@
 from pathlib import Path
+from src.utils.seed import set_global_seed
 from src.data.download import download_raw_dataset
 from src.data.build import build_working_data
 from src.data.compute_stats import compute_mean_std
@@ -6,6 +7,8 @@ from src.data.loaders import get_dataloaders
 
 
 def main():
+
+    set_global_seed(42)
 
     print("\n======================")
     print(" 1) DOWNLOAD DATASET")
