@@ -157,7 +157,6 @@ def main():
     print("Best acc:", info["best_acc"])
     print("Best model salvato in:", BEST_MODEL_PATH)
 
-    wandb.finish()
 
     # =========================
     # 9) EVALUATION (BEST MODEL)
@@ -187,6 +186,8 @@ def main():
         class_names=class_names,
     )
 
+
+    wandb.finish()
 
 if __name__ == "__main__":
     main()
