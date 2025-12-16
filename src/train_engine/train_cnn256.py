@@ -32,7 +32,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    train_model(model, dataloaders, dataset_sizes, criterion, optimizer, device, num_epochs=10)
+    train_model(model, dataloaders, dataset_sizes, criterion, optimizer, device, num_epochs=30)
 
 if __name__ == "__main__":
     main()
