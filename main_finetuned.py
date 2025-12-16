@@ -7,11 +7,11 @@ import wandb
 from src.utils.seed import set_global_seed
 from src.data.download import download_raw_dataset
 from src.data.build import build_working_data
-from src.ResNet.mean-std import IMAGENET_MEAN, IMAGENET_STD
+from src.ResNet.normalization import IMAGENET_MEAN, IMAGENET_STD
 from src.data.loaders import get_dataloaders
 from src.utils.class_weights import compute_class_weights
 
-from src.models.cnn256 import DeepFakeCNN256
+from src.models.resnet50 import build_resnet50
 from src.train_engine.train_cnn256 import train_model
 
 from src.evaluate.evaluate_cnn import evaluate_model, evaluate_on_test
@@ -45,13 +45,13 @@ def main():
     print(f"Working data creato in: {work_path}")
 
     # =========================
-    # 3) IMPORTING MEAN/STD
+    # 3) MEAN / STD (IMAGENET)
     # =========================
     print("\n===============================")
     print(" 3) MEAN AND STD (PREDEFINED)")
     print("===============================")
     mean, std = IMAGENET_MEAN, IMAGENET_STD
-    print("\nMean:", mean)
+    print("Mean:", mean)
     print("Std :", std)
 
     # =========================
@@ -72,7 +72,6 @@ def main():
         num_workers=2,
     )
 
-    print("\nDataloaders pronti!")
     print("Classi:", class_names)
     print("Sizes:", dataset_sizes)
 
@@ -90,73 +89,68 @@ def main():
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     # =========================
-    # 6) MODEL + OPTIMIZER
+    # 6) MODEL (RESNET50)
     # =========================
     print("\n===============================")
-    print(" 6) MODEL + OPTIMIZER")
+    print(" 6) MODEL (RESNET50)")
     print("===============================")
 
-    model = DeepFakeCNN256().to(device)
-    LR = 1e-3
-    optimizer = optim.Adam(model.parameters(), lr=LR)
+    model = build_resnet50(num_classes=2, pretrained=True).to(device)
+    print("Classifier head:", model.fc)
 
     # =========================
-    # 7) WANDB INIT (facoltativo)
+    # 7) PHASE 1: FC ONLY
     # =========================
     print("\n===============================")
-    print(" 7) WANDB INIT")
+    print(" 7) PHASE 1: TRAIN FC ONLY")
     print("===============================")
 
-    wandb.init(
-        project="deepfake-cnn-256",
-        name="run_CNN_256new",
-        config={
-            "img_size": IMG_SIZE,
-            "batch_size": BATCH_SIZE,
-            "epochs": 5,              # 👈 allineato a num_epochs
-            "optimizer": "Adam",
-            "lr": LR,
-            "model": "DeepFakeCNN256",
-            "patience": 5,
-            "min_delta": 0.0,
-        }
+    set_trainable_head_only(model)
+    optimizer_phase1 = optim.Adam(
+        filter(lambda p: p.requires_grad, model.parameters()),
+        lr=1e-4,
     )
-    wandb.watch(model, log="all", log_freq=100)
 
-    def log_fn(metrics: dict):
-        wandb.log(metrics)
-
-    # =========================
-    # 8) TRAINING (EARLY STOP)
-    # =========================
-    print("\n===============================")
-    print(" 8) TRAINING")
-    print("===============================")
-
-    BEST_MODEL_PATH = "checkpoints/best_model.pth"
-
-    model_trained, info = train_model(
+    model, info1 = train_model(
         model=model,
         dataloaders=dataloaders,
         dataset_sizes=dataset_sizes,
         criterion=criterion,
-        optimizer=optimizer,
+        optimizer=optimizer_phase1,
         device=device,
-        num_epochs=5,
+        num_epochs=10,
         patience=5,
-        min_delta=0.0,
-        best_model_path=BEST_MODEL_PATH,
-        log_fn=log_fn,
+        min_delta=1e-4,
+        best_model_path="checkpoints/resnet50_best_phase1.pth",
+        log_fn=None,
     )
 
+    # =========================
+    # 8) PHASE 2: LAYER4 + FC
+    # =========================
     print("\n===============================")
-    print(" TRAINING FINITO")
+    print(" 8) PHASE 2: TRAIN LAYER4 + FC")
     print("===============================")
-    print("Best val loss:", info["best_val_loss"])
-    print("Best acc:", info["best_acc"])
-    print("Best model salvato in:", BEST_MODEL_PATH)
 
-    wandb.finish()
+    set_trainable_layer4_and_head(model)
+    optimizer_phase2 = optim.Adam(
+        filter(lambda p: p.requires_grad, model.parameters()),
+        lr=1e-5,
+    )
+
+    model, info2 = train_model(
+        model=model,
+        dataloaders=dataloaders,
+        dataset_sizes=dataset_sizes,
+        criterion=criterion,
+        optimizer=optimizer_phase2,
+        device=device,
+        num_epochs=10,
+        patience=7,
+        min_delta=1e-4,
+        best_model_path="checkpoints/resnet50_best_phase2.pth",
+        log_fn=None,
+    )
 
     # =========================
     # 9) EVALUATION (BEST MODEL)
@@ -165,9 +159,12 @@ def main():
     print(" 9) EVALUATION")
     print("===============================")
 
-    # Validation (best model)
+    # Ricarico esplicitamente il best finale (scelta robusta)
+    best_path = "checkpoints/resnet50_best_phase2.pth"
+    model.load_state_dict(torch.load(best_path, map_location=device))
+
     _ = evaluate_model(
-        model=model_trained,
+        model=model,
         dataloader=dataloaders["val"],
         dataset_size=dataset_sizes["val"],
         criterion=criterion,
@@ -176,9 +173,8 @@ def main():
         phase_name="val",
     )
 
-    # Test (best model)
     _ = evaluate_on_test(
-        model=model_trained,
+        model=model,
         dataloader=dataloaders["test"],
         dataset_size=dataset_sizes["test"],
         criterion=criterion,
