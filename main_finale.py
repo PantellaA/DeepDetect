@@ -16,6 +16,7 @@ from src.train_engine.train_cnn256 import train_model
 
 from src.evaluate.evaluate_cnn import evaluate_model, evaluate_on_test
 
+
 def main():
     # =========================
     # 0) SEED + DEVICE
@@ -113,7 +114,7 @@ def main():
         config={
             "img_size": IMG_SIZE,
             "batch_size": BATCH_SIZE,
-            "epochs": 5,
+            "epochs": 5,              # 👈 allineato a num_epochs
             "optimizer": "Adam",
             "lr": LR,
             "model": "DeepFakeCNN256",
@@ -142,7 +143,7 @@ def main():
         criterion=criterion,
         optimizer=optimizer,
         device=device,
-        num_epochs=30,
+        num_epochs=5,
         patience=5,
         min_delta=0.0,
         best_model_path=BEST_MODEL_PATH,
@@ -158,27 +159,34 @@ def main():
 
     wandb.finish()
 
-# Validation (best model)
-val_loss, val_acc = evaluate_model(
-    model=model_trained,
-    dataloader=dataloaders["val"],
-    dataset_size=dataset_sizes["val"],
-    criterion=criterion,
-    device=device,
-    class_names=class_names,
-    phase_name="val",
-)
+    # =========================
+    # 9) EVALUATION (BEST MODEL)
+    # =========================
+    print("\n===============================")
+    print(" 9) EVALUATION")
+    print("===============================")
 
-# Test (best model)
-test_loss, test_acc = evaluate_on_test(
-    model=model_trained,
-    dataloader=dataloaders["test"],
-    dataset_size=dataset_sizes["test"],
-    criterion=criterion,
-    device=device,
-    class_names=class_names,
-)
+    # Validation (best model)
+    _ = evaluate_model(
+        model=model_trained,
+        dataloader=dataloaders["val"],
+        dataset_size=dataset_sizes["val"],
+        criterion=criterion,
+        device=device,
+        class_names=class_names,
+        phase_name="val",
+    )
+
+    # Test (best model)
+    _ = evaluate_on_test(
+        model=model_trained,
+        dataloader=dataloaders["test"],
+        dataset_size=dataset_sizes["test"],
+        criterion=criterion,
+        device=device,
+        class_names=class_names,
+    )
 
 
 if __name__ == "__main__":
-    main() 
+    main()
