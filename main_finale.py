@@ -114,7 +114,7 @@ def main():
         config={
             "img_size": IMG_SIZE,
             "batch_size": BATCH_SIZE,
-            "epochs": 5,              # 👈 allineato a num_epochs
+            "epochs": 2,              # 👈 allineato a num_epochs
             "optimizer": "Adam",
             "lr": LR,
             "model": "DeepFakeCNN256",
@@ -143,7 +143,7 @@ def main():
         criterion=criterion,
         optimizer=optimizer,
         device=device,
-        num_epochs=5,
+        num_epochs=2,
         patience=5,
         min_delta=0.0,
         best_model_path=BEST_MODEL_PATH,
