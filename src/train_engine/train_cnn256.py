@@ -21,7 +21,15 @@ def train_model(
     log_fn: Optional[Callable[[dict], None]] = None,
 ) -> Tuple[torch.nn.Module, dict]:
     """
-    Training loop con early stopping su val_loss e salvataggio del best model.
+    
+    Training loop with early stopping based on validation loss.
+
+    At each epoch, the model is trained on the training set and evaluated on the
+    validation set. Training stops early if the validation loss does not improve 
+    for a given number of consecutive epochs(patience).
+
+    Returns the model loaded with the best-performing weights and a dictionary
+    containing training statistics.
     """
     since = time.time()
 
@@ -55,7 +63,7 @@ def train_model(
                 optimizer.zero_grad(set_to_none=True)
 
                 with torch.set_grad_enabled(phase == "train"):
-                    outputs = model(inputs)          # logits
+                    outputs = model(inputs)          
                     loss = criterion(outputs, labels)
                     preds = outputs.argmax(dim=1)
 
@@ -81,7 +89,7 @@ def train_model(
                     f"{phase}_acc": epoch_acc,
                 })
 
-            # ---- EARLY STOP + BEST MODEL SOLO SU VALIDATION ----
+            # ---- EARLY STOP + BEST MODEL ONLY ON VALIDATION ----
             if phase == "val":
                 improved = epoch_loss < (best_val_loss - min_delta)
 
@@ -93,22 +101,22 @@ def train_model(
 
                     if best_model_path is not None:
                         torch.save(best_model_wts, best_model_path)
-                        print("💾 Best model salvato!")
+                        print(" Best model saved!")
                 else:
                     epochs_no_improve += 1
-                    print(f"📉 Nessun miglioramento della val_loss per {epochs_no_improve} epoche.")
+                    print(f" No improvement in validation loss for {epochs_no_improve} epoch.")
 
                     if epochs_no_improve >= patience:
-                        print(f"🛑 Early Stopping attivato all'epoch {epoch+1}")
+                        print(f" Early stopping activated at epoch {epoch+1}")
                         stop_early = True
 
         if stop_early:
             break
 
     time_elapsed = time.time() - since
-    print(f"\n⏳ Training completato in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s")
-    print(f"🏆 Migliore Val Accuracy (al best val_loss): {best_acc:.4f}")
-    print(f"📉 Migliore Val Loss: {best_val_loss:.4f}")
+    print(f"\n Training completed in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s")
+    print(f" Best Val Accuracy: {best_acc:.4f}")
+    print(f" Best Val Loss: {best_val_loss:.4f}")
 
     model.load_state_dict(best_model_wts)
     return model, {
