@@ -7,7 +7,7 @@ import wandb
 from src.utils.seed import set_global_seed
 from src.data.download import download_raw_dataset
 from src.data.build import build_working_data
-from src.data.compute_stats import compute_mean_std
+from src.ResNet.mean-std import IMAGENET_MEAN, IMAGENET_STD
 from src.data.loaders import get_dataloaders
 from src.utils.class_weights import compute_class_weights
 
@@ -61,7 +61,7 @@ def main():
     print(" 4) CREAZIONE DATALOADERS")
     print("===============================")
     BATCH_SIZE = 32
-    IMG_SIZE = 256
+    IMG_SIZE = 224
 
     dataloaders, dataset_sizes, class_names = get_dataloaders(
         work_dir=work_dir,
