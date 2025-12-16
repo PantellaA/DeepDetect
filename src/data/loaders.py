@@ -13,6 +13,12 @@ def get_dataloaders(
     std=None,
     num_workers: int = 2,
 ):
+    """
+    Creates PyTorch ImageFolder datasets and dataloaders for the training, validation,
+    and test splits, applying data augmentation to the training set and normalization
+    using the provided mean and standard deviation.
+    """
+
     work_path = Path(work_dir)
 
     # ----- 1. TRANSFORMS -----
@@ -50,32 +56,4 @@ def get_dataloaders(
     # ----- 3. DATALOADERS -----
     dataloaders = {
         "train": DataLoader(
-            image_datasets["train"],
-            batch_size=batch_size,
-            shuffle=True,
-            num_workers=num_workers,
-        ),
-        "val": DataLoader(
-            image_datasets["val"],
-            batch_size=batch_size,
-            shuffle=False,
-            num_workers=num_workers,
-        ),
-        "test": DataLoader(
-            image_datasets["test"],
-            batch_size=batch_size,
-            shuffle=False,
-            num_workers=num_workers,
-        ),
-    }
-
-    dataset_sizes = {split: len(ds) for split, ds in image_datasets.items()}
-    class_names = image_datasets["train"].classes  
-
-    print("\n Dataloaders created:")
-    for split in ["train", "val", "test"]:
-        print(f"{split.upper():5s} → {dataset_sizes[split]:6d} immages")
-
-    print(f"Class: {class_names}")
-
-    return dataloaders, dataset_sizes, class_names
+            im
