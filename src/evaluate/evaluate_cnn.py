@@ -52,7 +52,7 @@ def evaluate_model(
     print(f"{phase_name.capitalize()} Loss: {val_loss:.4f}")
     print(f"{phase_name.capitalize()} Accuracy: {val_acc:.4f}")
 
-    print("\nConfusion matrix (righe = veri, colonne = predetti):")
+    print("\nConfusion matrix:")
     print(confusion_matrix(all_labels, all_preds))
 
     print("\nClassification report:")
@@ -62,7 +62,7 @@ def evaluate_model(
         auc = roc_auc_score(all_labels, all_probs)
         print(f"ROC-AUC: {auc:.4f}")
     except ValueError:
-        print("ROC-AUC non calcolabile (una sola classe presente).")
+        print("ROC-AUC Not computable (only one class present).")
 
     print("===========================================")
 
@@ -115,7 +115,7 @@ def evaluate_on_test(
     print(f"Test Loss: {test_loss:.4f}")
     print(f"Test Accuracy: {test_acc:.4f}")
 
-    print("\nConfusion matrix (righe = veri, colonne = predetti):")
+    print("\nConfusion matrix :")
     print(confusion_matrix(all_labels, all_preds))
 
     print("\nClassification report:")
@@ -125,7 +125,7 @@ def evaluate_on_test(
         auc = roc_auc_score(all_labels, all_probs)
         print(f"ROC-AUC: {auc:.4f}")
     except ValueError:
-        print("ROC-AUC non calcolabile (una sola classe presente).")
+        print("Not computable (only one class present).")
 
     print("===========================================")
 
