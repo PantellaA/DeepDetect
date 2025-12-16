@@ -1,4 +1,3 @@
-# src/train/trainer.py
 import copy
 import time
 from pathlib import Path
