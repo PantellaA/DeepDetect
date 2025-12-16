@@ -4,6 +4,12 @@ import torch.nn.functional as F
 
 
 class DeepFakeCNN256(nn.Module):
+    """
+    Architecture:
+    - Four convolutional blocks with Batch Normalization, ReLU, and Max Pooling
+    - Global Average Pooling
+    - Final fully connected layer with two output classes
+    """
     def __init__(self):
         super(DeepFakeCNN256, self).__init__()
 
@@ -27,6 +33,9 @@ class DeepFakeCNN256(nn.Module):
         self.fc = nn.Linear(256, 2)
 
     def forward(self, x):
+        """
+        forward pass
+        """
         x = self.pool(F.relu(self.bn1(self.conv1(x))))
         x = self.pool(F.relu(self.bn2(self.conv2(x))))
         x = self.pool(F.relu(self.bn3(self.conv3(x))))
