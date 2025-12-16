@@ -26,16 +26,16 @@ The codebase is organized to clearly separate **data handling, models, training,
 
 ### `src/data/`
 Handles **dataset preparation**:
-* `download.py`: dataset download
-* `build.py`: construction of train/validation/test splits
-* `compute_stats.py`: computation of mean and std of train set for normalization (only CNN256)
+* `download.py`: dataset download.
+* `build.py`: construction of train/validation/test splits.
+* `compute_stats.py`: computation of mean and std of train set for normalization (only for CNN256).
 * `loaders.py`: creation of PyTorch dataloaders.
 
 --- 
 
 ### `src/models/`
 Contains **model definitions**:
-* `cnn256.py`: custom CNN architecture for 256×256 images
+* `cnn256.py`: custom CNN architecture for 256×256 images.
 * `resnet50.py`: ResNet50 builder with a custom binary classification head.
 
 ---
