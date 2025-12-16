@@ -12,8 +12,12 @@ from src.data.loaders import get_dataloaders
 from src.utils.class_weights import compute_class_weights
 
 from src.models.resnet50 import build_resnet50
-from src.train_engine.train_cnn256 import train_model
+from src.utils.freeze import (
+    set_trainable_head_only,
+    set_trainable_layer4_and_head,
+)
 
+from src.train_engine.train_cnn256 import train_model
 from src.evaluate.evaluate_cnn import evaluate_model, evaluate_on_test
 
 
@@ -99,6 +103,33 @@ def main():
     print("Classifier head:", model.fc)
 
     # =========================
+    # WANDB INIT
+    # =========================
+    wandb.init(
+        project="deepdetect-resnet50",
+        name="resnet50_finetune",
+        config={
+            "model": "ResNet50",
+            "img_size": IMG_SIZE,
+            "batch_size": BATCH_SIZE,
+            "optimizer_phase1": "Adam",
+            "lr_phase1": 1e-4,
+            "optimizer_phase2": "Adam",
+            "lr_phase2": 1e-5,
+            "epochs_phase1": 10,
+            "epochs_phase2": 10,
+            "class_weights": "balanced",
+            "normalization": "ImageNet",
+        },
+    )
+    
+    wandb.watch(model, log="all", log_freq=100)
+    
+    def log_fn(metrics: dict):
+        wandb.log(metrics)
+
+    
+    # =========================
     # 7) PHASE 1: FC ONLY
     # =========================
     print("\n===============================")
@@ -122,7 +153,7 @@ def main():
         patience=5,
         min_delta=1e-4,
         best_model_path="checkpoints/resnet50_best_phase1.pth",
-        log_fn=None,
+        log_fn=log_fn,
     )
 
     # =========================
@@ -149,7 +180,7 @@ def main():
         patience=7,
         min_delta=1e-4,
         best_model_path="checkpoints/resnet50_best_phase2.pth",
-        log_fn=None,
+        log_fn=log_fn,
     )
 
     # =========================
@@ -182,6 +213,7 @@ def main():
         class_names=class_names,
     )
 
+wandb.finish()
 
 if __name__ == "__main__":
     main()
