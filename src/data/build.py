@@ -3,6 +3,10 @@ import os
 from sklearn.model_selection import train_test_split
 
 def build_working_data(ddata: Path, work_dir: str = "working_data") -> Path:
+    """
+    Splits the original training data into training and validation sets (90/10) with a fixed random 
+    seed and builds the working dataset structure using symbolic links for train, validation, and test sets
+    """
     work_data = Path(work_dir)
     work_data.mkdir(parents=True, exist_ok=True)
 
