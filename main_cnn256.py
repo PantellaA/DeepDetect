@@ -14,7 +14,7 @@ from src.utils.class_weights import compute_class_weights
 from src.models.cnn256 import DeepFakeCNN256
 from src.train_engine.train_cnn256 import train_model
 
-from src.evaluate.evaluate_cnn import evaluate_model, evaluate_on_test
+from src.evaluate.eval import evaluate_model, evaluate_on_test
 
 
 def main():
