@@ -13,7 +13,7 @@ from src.data.loaders import get_dataloaders
 from src.utils.class_weights import compute_class_weights
 
 from src.models.cnn256 import DeepFakeCNN256
-from src.train.trainer import train_model
+from src.train_engine.train_cnn256 import train_model
 
 
 def main():
