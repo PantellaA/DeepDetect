@@ -42,13 +42,13 @@ Contains **model definitions**:
 
 ### `src/train_engine/`
 Implements **training loops**:
-* CNN-specific training
-* ResNet50 fine-tuning with early stopping and checkpointing.
+* `train_cnn256.py`: training loop used for the custom CNN, with early stopping.
+* `train_resnet50.py`: training loop used for ResNet50 fine-tuning, with early stopping.
 
 ---
 
 ### `src/evaluate/`
-Provides **evaluation utilities**:
+`eval.py` Provides **evaluation utilities**:
 * loss and accuracy
 * confusion matrix
 * classification metrics (precision, recall, F1).
@@ -57,12 +57,12 @@ Provides **evaluation utilities**:
 
 ### `src/utils/`
 General utility functions:
-* random seed control (reproducibility)
-* class-weight computation
-* freezing/unfreezing model layers during fine-tuning.
+* `seed.py` Random seed control (reproducibility)
+* `class_weights.py` Class-weight computation
+* `freeze.py` Freezing/unfreezing model layers during fine-tuning.
 
 ---
 
-`src/ResNet/`
-Supporting components for ResNet-based models:
+### `src/ResNet/`
+`normalization.py` Supporting components for ResNet-based models:
 * normalization utilities aligned with ImageNet preprocessing.
