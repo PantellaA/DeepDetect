@@ -4,7 +4,9 @@ from sklearn.utils.class_weight import compute_class_weight
 
 
 def compute_class_weights(train_dataset, device):
-  
+    """
+    Compute balanced class weights for the training dataset
+    """
     targets = train_dataset.targets
     classes = np.unique(targets)
 
