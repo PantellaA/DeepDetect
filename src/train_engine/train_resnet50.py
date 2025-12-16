@@ -59,9 +59,7 @@ def train_model(
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
 
-            # =========================
-            # LOGGING (wandb o altro)
-            # =========================
+            
             if log_fn is not None:
                 log_fn({
                     f"{phase_name}/{phase}_loss": epoch_loss,
