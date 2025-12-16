@@ -17,7 +17,7 @@ from src.utils.freeze import (
     set_trainable_layer4_and_head,
 )
 
-from src.train_engine.train_cnn256 import train_model
+from src.train_engine.train_resnet50 import train_model
 from src.evaluate.evaluate_cnn import evaluate_model, evaluate_on_test
 
 
