@@ -158,6 +158,27 @@ def main():
 
     wandb.finish()
 
+# Validation (best model)
+val_loss, val_acc = evaluate_model(
+    model=model_trained,
+    dataloader=dataloaders["val"],
+    dataset_size=dataset_sizes["val"],
+    criterion=criterion,
+    device=device,
+    class_names=class_names,
+    phase_name="val",
+)
+
+# Test (best model)
+test_loss, test_acc = evaluate_on_test(
+    model=model_trained,
+    dataloader=dataloaders["test"],
+    dataset_size=dataset_sizes["test"],
+    criterion=criterion,
+    device=device,
+    class_names=class_names,
+)
+
 
 if __name__ == "__main__":
     main() 
