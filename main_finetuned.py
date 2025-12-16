@@ -18,7 +18,7 @@ from src.utils.freeze import (
 )
 
 from src.train_engine.train_resnet50 import train_model
-from src.evaluate.evaluate_cnn import evaluate_model, evaluate_on_test
+from src.evaluate.eval import evaluate_model, evaluate_on_test
 
 
 def main():
