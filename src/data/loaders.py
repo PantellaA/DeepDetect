@@ -56,4 +56,32 @@ def get_dataloaders(
     # ----- 3. DATALOADERS -----
     dataloaders = {
         "train": DataLoader(
-            im
+            image_datasets["train"],
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+        ),
+        "val": DataLoader(
+            image_datasets["val"],
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+        ),
+        "test": DataLoader(
+            image_datasets["test"],
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+        ),
+    }
+
+    dataset_sizes = {split: len(ds) for split, ds in image_datasets.items()}
+    class_names = image_datasets["train"].classes
+
+    print("\nDataloaders created:")
+    for split in ["train", "val", "test"]:
+        print(f"{split.upper():5s} → {dataset_sizes[split]:6d} images")
+
+    print(f"Classes: {class_names}")
+
+    return dataloaders, dataset_sizes, class_names
