@@ -35,20 +35,20 @@ def main():
     print(f"Dataset path: {ddata}")
 
     # =========================
-    # 2) CREAZIONE WORKING_DATA
+    # 2) CREATING WORKING_DATA
     # =========================
     print("\n==========================")
-    print(" 2) CREAZIONE WORKING_DATA")
+    print(" 2) CREATING WORKING_DATA")
     print("==========================")
     work_dir = "working_data"
     work_path = build_working_data(ddata, work_dir=work_dir)
-    print(f"Working data creato in: {work_path}")
+    print(f"Working data created in: {work_path}")
 
     # =========================
-    # 3) CALCOLO MEAN / STD
+    # 3) COMPUTING MEAN / STD
     # =========================
     print("\n===============================")
-    print(" 3) CALCOLO MEAN / STD (TRAIN)")
+    print(" 3) COMPUTING MEAN / STD (TRAIN)")
     print("===============================")
     train_dir = f"{work_dir}/train"
     mean, std = compute_mean_std(train_dir)
@@ -59,7 +59,7 @@ def main():
     # 4) DATALOADERS
     # =========================
     print("\n===============================")
-    print(" 4) CREAZIONE DATALOADERS")
+    print(" 4) CREATING DATALOADERS")
     print("===============================")
     BATCH_SIZE = 32
     IMG_SIZE = 256
@@ -73,8 +73,8 @@ def main():
         num_workers=2,
     )
 
-    print("\nDataloaders pronti!")
-    print("Classi:", class_names)
+    print("\nDataloaders ready")
+    print("Classes:", class_names)
     print("Sizes:", dataset_sizes)
 
     # =========================
@@ -102,7 +102,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=LR)
 
     # =========================
-    # 7) WANDB INIT (facoltativo)
+    # 7) WANDB INIT 
     # =========================
     print("\n===============================")
     print(" 7) WANDB INIT")
@@ -114,7 +114,7 @@ def main():
         config={
             "img_size": IMG_SIZE,
             "batch_size": BATCH_SIZE,
-            "epochs": 2,              # 👈 allineato a num_epochs
+            "epochs": 30,              
             "optimizer": "Adam",
             "lr": LR,
             "model": "DeepFakeCNN256",
@@ -143,7 +143,7 @@ def main():
         criterion=criterion,
         optimizer=optimizer,
         device=device,
-        num_epochs=2,
+        num_epochs=30,
         patience=5,
         min_delta=0.0,
         best_model_path=BEST_MODEL_PATH,
@@ -151,11 +151,11 @@ def main():
     )
 
     print("\n===============================")
-    print(" TRAINING FINITO")
+    print(" TRAINING ENDED")
     print("===============================")
     print("Best val loss:", info["best_val_loss"])
     print("Best acc:", info["best_acc"])
-    print("Best model salvato in:", BEST_MODEL_PATH)
+    print("Best model saved in:", BEST_MODEL_PATH)
 
 
     # =========================
