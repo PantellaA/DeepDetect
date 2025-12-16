@@ -113,7 +113,7 @@ def main():
         config={
             "img_size": IMG_SIZE,
             "batch_size": BATCH_SIZE,
-            "epochs": 30,
+            "epochs": 5,
             "optimizer": "Adam",
             "lr": LR,
             "model": "DeepFakeCNN256",
