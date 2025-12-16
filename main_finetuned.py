@@ -45,13 +45,12 @@ def main():
     print(f"Working data creato in: {work_path}")
 
     # =========================
-    # 3) CALCOLO MEAN / STD
+    # 3) IMPORTING MEAN/STD
     # =========================
     print("\n===============================")
-    print(" 3) CALCOLO MEAN / STD (TRAIN)")
+    print(" 3) MEAN AND STD (PREDEFINED)")
     print("===============================")
-    train_dir = f"{work_dir}/train"
-    mean, std = compute_mean_std(train_dir)
+    mean, std = IMAGENET_MEAN, IMAGENET_STD
     print("\nMean:", mean)
     print("Std :", std)
 
