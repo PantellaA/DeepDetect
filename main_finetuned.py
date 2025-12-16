@@ -213,7 +213,7 @@ def main():
         class_names=class_names,
     )
 
-wandb.finish()
+    wandb.finish()
 
 if __name__ == "__main__":
     main()
