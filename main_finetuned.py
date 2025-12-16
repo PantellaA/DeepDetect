@@ -39,14 +39,14 @@ def main():
     print(f"Dataset path: {ddata}")
 
     # =========================
-    # 2) CREAZIONE WORKING_DATA
+    # 2) CREATING WORKING_DATA
     # =========================
     print("\n==========================")
-    print(" 2) CREAZIONE WORKING_DATA")
+    print(" 2) CREATING WORKING_DATA")
     print("==========================")
     work_dir = "working_data"
     work_path = build_working_data(ddata, work_dir=work_dir)
-    print(f"Working data creato in: {work_path}")
+    print(f"Working created in: {work_path}")
 
     # =========================
     # 3) MEAN / STD (IMAGENET)
@@ -62,7 +62,7 @@ def main():
     # 4) DATALOADERS
     # =========================
     print("\n===============================")
-    print(" 4) CREAZIONE DATALOADERS")
+    print(" 4) CREATING DATALOADERS")
     print("===============================")
     BATCH_SIZE = 32
     IMG_SIZE = 224
@@ -76,7 +76,7 @@ def main():
         num_workers=2,
     )
 
-    print("Classi:", class_names)
+    print("Classes:", class_names)
     print("Sizes:", dataset_sizes)
 
     # =========================
@@ -190,7 +190,6 @@ def main():
     print(" 9) EVALUATION")
     print("===============================")
 
-    # Ricarico esplicitamente il best finale (scelta robusta)
     best_path = "checkpoints/resnet50_best_phase2.pth"
     model.load_state_dict(torch.load(best_path, map_location=device))
 
