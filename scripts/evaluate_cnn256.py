@@ -67,7 +67,7 @@ def main():
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     # ========= MODEL =========
-    model = DeepFakeCNN256(num_classes=2).to(device)
+    model = DeepFakeCNN256().to(device)
 
     # ========= LOAD BEST CHECKPOINT FROM HF =========
     print("[INFO] Downloading CNN256 checkpoint from Hugging Face...")
