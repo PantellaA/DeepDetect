@@ -1,3 +1,5 @@
+# scripts/evaluate_resnet50.py
+
 from pathlib import Path
 
 import torch
@@ -8,7 +10,8 @@ from huggingface_hub import hf_hub_download
 from src.data.download import download_raw_dataset
 from src.data.build import build_working_data
 from src.data.loaders import get_dataloaders
-from src.evaluate.eval import evaluate_split
+
+from src.evaluate.eval import evaluate_model, evaluate_on_test
 
 
 def main():
@@ -18,18 +21,16 @@ def main():
     # ========= PATHS =========
     work_dir = Path("working_data")
 
-    # ========= DATA PREPARATION (ONLY IF NEEDED) =========
+    # ========= DATA PREP (ONLY IF NEEDED) =========
     if not work_dir.exists():
         print("[INFO] working_data non trovato. Avvio download + build...")
-
-        raw_path = download_raw_dataset()  # deve restituire un path alla cartella raw
-        build_working_data(raw_path, str(work_dir))  # se la tua funzione vuole stringhe
-
+        raw_path = download_raw_dataset()             # deve restituire path cartella raw
+        build_working_data(raw_path, str(work_dir))   # se accetta stringa
         print("[INFO] working_data creato.")
     else:
         print("[INFO] working_data già presente. Skip download/build.")
 
-    # ========= DATA LOADERS =========
+    # ========= DATALOADERS =========
     dataloaders, dataset_sizes, class_names = get_dataloaders(
         work_dir=str(work_dir),
         batch_size=32,
@@ -58,25 +59,28 @@ def main():
 
     # ========= EVALUATION =========
     print("\n[INFO] Valutazione su VALIDATION set...")
-    evaluate_split(
-        model,
-        dataloaders["val"],
-        dataset_sizes["val"],
-        criterion,
-        class_names,
-        split_name="val",
+    _ = evaluate_model(
+        model=model,
+        dataloader=dataloaders["val"],
+        dataset_size=dataset_sizes["val"],
+        criterion=criterion,
+        device=device,
+        class_names=class_names,
+        phase_name="val",
     )
 
     print("\n[INFO] Valutazione su TEST set...")
-    evaluate_split(
-        model,
-        dataloaders["test"],
-        dataset_sizes["test"],
-        criterion,
-        class_names,
-        split_name="test",
+    _ = evaluate_on_test(
+        model=model,
+        dataloader=dataloaders["test"],
+        dataset_size=dataset_sizes["test"],
+        criterion=criterion,
+        device=device,
+        class_names=class_names,
     )
 
 
 if __name__ == "__main__":
     main()
+
+
