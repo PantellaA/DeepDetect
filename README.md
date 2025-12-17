@@ -31,6 +31,17 @@ This project uses the **DeepDetect-2025** dataset for real vs AI-generated image
 
 ---
 
+## Scripts (`scripts/`)
+
+This directory contains standalone scripts to **download and load pre-trained weights** directly from Hugging Face (solving the GitHub file size limit issue):
+
+* `load_best_cnn.py` (o il nome reale del tuo file)
+    Automatically downloads the best checkpoint for the **Custom CNN** from Hugging Face and rebuilds the model ready for inference.
+
+* `load_best_resnet.py` (o il nome reale del tuo file)
+    Automatically downloads the best checkpoint for the **Fine-Tuned ResNet50** from Hugging Face and rebuilds the model ready for inference.
+
+---
 
 ## Core Modules (`src/`)
 
