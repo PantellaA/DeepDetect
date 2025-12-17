@@ -89,8 +89,8 @@ Implements **training loops**:
 
 ### `src/utils/`
 General utility functions:
-* `seed.py` Random seed control (reproducibility)
-* `class_weights.py` Class-weight computation
+* `seed.py` Random seed control (reproducibility).
+* `class_weights.py` Class-weight computation.
 * `freeze.py` Freezing/unfreezing model layers during fine-tuning.
 
 ---
