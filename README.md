@@ -8,6 +8,16 @@ The codebase is organized to clearly separate **data handling, models, training,
 
 ---
 
+## Dataset
+
+This project uses the **DeepDetect-2025** dataset for real vs AI-generated image classification.
+
+- Dataset: DeepDetect-2025  
+- Source: [https://www.kaggle.com/datasets/datasetcreator/deepdetect-2025](https://www.kaggle.com/datasets/ayushmandatta1/deepdetect-2025)  
+- License: Apache License 2.0  
+
+--- 
+
 ##  Entry Points (root directory)
 
 * `main_cnn256.py`
