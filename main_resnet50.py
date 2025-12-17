@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -30,7 +31,7 @@ def main():
     print("Device:", device)
 
     # =========================
-    # 1) DOWNLOAD DATASET
+    # 1) DOWNLOAD + WORKING_DATA
     # =========================
     print("\n======================")
     print(" 1) DOWNLOAD DATASET")
@@ -38,9 +39,6 @@ def main():
     ddata: Path = download_raw_dataset()
     print(f"Dataset path: {ddata}")
 
-    # =========================
-    # 2) CREATING WORKING_DATA
-    # =========================
     print("\n==========================")
     print(" 2) CREATING WORKING_DATA")
     print("==========================")
@@ -52,7 +50,7 @@ def main():
     # 3) MEAN / STD (IMAGENET)
     # =========================
     print("\n===============================")
-    print(" 3) MEAN AND STD (PREDEFINED)")
+    print(" 3) MEAN AND STD (IMAGENET)")
     print("===============================")
     mean, std = IMAGENET_MEAN, IMAGENET_STD
     print("Mean:", mean)
@@ -103,44 +101,57 @@ def main():
     print("Classifier head:", model.fc)
 
     # =========================
-    # WANDB INIT
+    # 6.5) CHECKPOINT DIR
     # =========================
+    Path("checkpoints").mkdir(parents=True, exist_ok=True)
+
+    # =========================
+    # 7) WANDB INIT
+    # =========================
+    print("\n===============================")
+    print(" 7) WANDB INIT")
+    print("===============================")
+
     wandb.init(
         project="deepdetect-resnet50",
         name="resnet50_finetune",
         config={
+            "seed": 42,
             "model": "ResNet50",
             "img_size": IMG_SIZE,
             "batch_size": BATCH_SIZE,
-            "optimizer_phase1": "Adam",
-            "lr_phase1": 1e-4,
-            "optimizer_phase2": "Adam",
-            "lr_phase2": 1e-5,
+            "normalization": "ImageNet",
+            "class_weights": "balanced",
             "epochs_phase1": 2,
             "epochs_phase2": 2,
-            "class_weights": "balanced",
-            "normalization": "ImageNet",
+            "patience_phase1": 5,
+            "patience_phase2": 7,
+            "min_delta": 1e-4,
+            "lr_phase1": 1e-4,
+            "lr_phase2": 1e-5,
         },
     )
-    
+
     wandb.watch(model, log="all", log_freq=100)
-    
+
     def log_fn(metrics: dict):
         wandb.log(metrics)
 
-    
     # =========================
-    # 7) PHASE 1: FC ONLY
+    # 8) PHASE 1: FC ONLY
     # =========================
     print("\n===============================")
-    print(" 7) PHASE 1: TRAIN FC ONLY")
+    print(" 8) PHASE 1: TRAIN FC ONLY")
     print("===============================")
 
     set_trainable_head_only(model)
+
     optimizer_phase1 = optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
         lr=1e-4,
     )
+
+    best_phase1 = "checkpoints/resnet50_best_phase1.pth"
 
     model, info1 = train_model(
         model=model,
@@ -152,22 +163,27 @@ def main():
         num_epochs=2,
         patience=5,
         min_delta=1e-4,
-        best_model_path="checkpoints/resnet50_best_phase1.pth",
-        log_fn=log_fn,
+        best_model_path=best_phase1,
+        log_fn=lambda m: log_fn({f"phase1/{k}": v for k, v in m.items() if k != "epoch"} | {"epoch": m.get("epoch")}),
     )
 
+    model.load_state_dict(torch.load(best_phase1, map_location=device))
+
     # =========================
-    # 8) PHASE 2: LAYER4 + FC
+    # 9) PHASE 2: LAYER4 + FC
     # =========================
     print("\n===============================")
-    print(" 8) PHASE 2: TRAIN LAYER4 + FC")
+    print(" 9) PHASE 2: TRAIN LAYER4 + FC")
     print("===============================")
 
     set_trainable_layer4_and_head(model)
+
     optimizer_phase2 = optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
         lr=1e-5,
     )
+
+    best_phase2 = "checkpoints/resnet50_best_phase2.pth"
 
     model, info2 = train_model(
         model=model,
@@ -179,19 +195,18 @@ def main():
         num_epochs=2,
         patience=7,
         min_delta=1e-4,
-        best_model_path="checkpoints/resnet50_best_phase2.pth",
-        log_fn=log_fn,
+        best_model_path=best_phase2,
+        log_fn=lambda m: log_fn({f"phase2/{k}": v for k, v in m.items() if k != "epoch"} | {"epoch": m.get("epoch")}),
     )
 
     # =========================
-    # 9) EVALUATION (BEST MODEL)
+    # 10) EVALUATION (BEST FINAL)
     # =========================
     print("\n===============================")
-    print(" 9) EVALUATION")
+    print(" 10) EVALUATION (BEST FINAL)")
     print("===============================")
 
-    best_path = "checkpoints/resnet50_best_phase2.pth"
-    model.load_state_dict(torch.load(best_path, map_location=device))
+    model.load_state_dict(torch.load(best_phase2, map_location=device))
 
     _ = evaluate_model(
         model=model,
@@ -213,6 +228,7 @@ def main():
     )
 
     wandb.finish()
+
 
 if __name__ == "__main__":
     main()
