@@ -1,5 +1,3 @@
-# scripts/evaluate_resnet50.py
-
 from pathlib import Path
 
 import torch
@@ -22,14 +20,14 @@ def main():
     # ========= PATHS =========
     work_dir = Path("working_data")
 
-    # ========= DATA PREP (ONLY IF NEEDED) =========
+    # ========= DATA PREPARATION (ONLY IF NEEDED) =========
     if not work_dir.exists():
-        print("[INFO] working_data non trovato. Avvio download + build...")
-        raw_path = download_raw_dataset()             # deve restituire path cartella raw
-        build_working_data(raw_path, str(work_dir))   # se accetta stringa
-        print("[INFO] working_data creato.")
+        print("[INFO] working_data not found. Starting download and build...")
+        raw_path = download_raw_dataset()             
+        build_working_data(raw_path, str(work_dir))   
+        print("[INFO] working_data created.")
     else:
-        print("[INFO] working_data già presente. Skip download/build.")
+        print("[INFO] working_data already exists. Skipping download/build.")
 
     # ========= DATALOADERS =========
     dataloaders, dataset_sizes, class_names = get_dataloaders(
@@ -47,21 +45,21 @@ def main():
     model.fc = nn.Linear(model.fc.in_features, 2)
     model = model.to(device)
 
-    # ========= WEIGHTS (HF) =========
-    print("[INFO] Scarico checkpoint ResNet50 da Hugging Face...")
+    # ========= WEIGHTS (HUGGING FACE) =========
+    print("[INFO] Downloading ResNet50 checkpoint from Hugging Face...")
     weights_path = hf_hub_download(
         repo_id="PantellaA/DeepDetect-Models",
         filename="resnet50/resnet50_best_checkpoint.pth",
     )
-    print(f"[INFO] Checkpoint scaricato: {weights_path}")
+    print(f"[INFO] Checkpoint downloaded: {weights_path}")
 
     state_dict = torch.load(weights_path, map_location=device)
     model.load_state_dict(state_dict)
     model.eval()
-    print("[INFO] Modello caricato e messo in eval().")
+    print("[INFO] Model loaded and set to eval mode.")
 
     # ========= EVALUATION =========
-    print("\n[INFO] Valutazione su VALIDATION set...")
+    print("\n[INFO] Evaluating on VALIDATION set...")
     _ = evaluate_model(
         model=model,
         dataloader=dataloaders["val"],
@@ -72,7 +70,7 @@ def main():
         phase_name="val",
     )
 
-    print("\n[INFO] Valutazione su TEST set...")
+    print("\n[INFO] Evaluating on TEST set...")
     _ = evaluate_on_test(
         model=model,
         dataloader=dataloaders["test"],
