@@ -10,7 +10,7 @@ from huggingface_hub import hf_hub_download
 from src.data.download import download_raw_dataset
 from src.data.build import build_working_data
 from src.data.loaders import get_dataloaders
-from src.RESNET.normalization import IMAGENET_MEAN, IMAGENET_STD
+from src.ResNet.normalization import IMAGENET_MEAN, IMAGENET_STD
 
 from src.evaluate.eval import evaluate_model, evaluate_on_test
 
