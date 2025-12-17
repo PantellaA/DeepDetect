@@ -1,5 +1,6 @@
 import copy
 import time
+from pathlib import Path
 import torch
 
 
@@ -11,29 +12,37 @@ def train_model(
     optimizer,
     device,
     num_epochs,
-    phase_name="train",
     patience=5,
-    min_delta=1e-4,
-    checkpoint_path=None,
+    min_delta=0.0,
     best_model_path=None,
+    start_epoch=0,
     log_fn=None,
 ):
+    
     since = time.time()
 
     best_model_wts = copy.deepcopy(model.state_dict())
     best_val_loss = float("inf")
     best_acc = 0.0
-    epochs_no_improve = 0
 
-    for epoch in range(num_epochs):
+    epochs_no_improve = 0
+    stop_early = False
+    
+    if best_model_path is not None:
+        best_model_path = Path(best_model_path)
+        best_model_path.parent.mkdir(parents=True, exist_ok=True)
+
+    history = {"train_loss": [], "val_loss": [], "train_acc": [], "val_acc": []}
+
+    for epoch in range(start_epoch, num_epochs):
+        print(f"\nEpoch {epoch+1}/{num_epochs}")
+        print("-" * 10)
+
         for phase in ["train", "val"]:
             if phase not in dataloaders:
                 continue
 
-            if phase == "train":
-                model.train()
-            else:
-                model.eval()
+            model.train() if phase == "train" else model.eval()
 
             running_loss = 0.0
             running_corrects = 0
@@ -46,70 +55,65 @@ def train_model(
 
                 with torch.set_grad_enabled(phase == "train"):
                     outputs = model(inputs)
-                    _, preds = torch.max(outputs, 1)
                     loss = criterion(outputs, labels)
+                    preds = outputs.argmax(dim=1)
 
                     if phase == "train":
                         loss.backward()
                         optimizer.step()
 
                 running_loss += loss.item() * inputs.size(0)
-                running_corrects += torch.sum(preds == labels.data)
+                running_corrects += (preds == labels).sum().item()
 
             epoch_loss = running_loss / dataset_sizes[phase]
-            epoch_acc = running_corrects.double() / dataset_sizes[phase]
+            epoch_acc = running_corrects / dataset_sizes[phase]
 
-            
+            print(f"{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
+
+            history[f"{phase}_loss"].append(epoch_loss)
+            history[f"{phase}_acc"].append(epoch_acc)
+
             if log_fn is not None:
                 log_fn({
-                    f"{phase_name}/{phase}_loss": epoch_loss,
-                    f"{phase_name}/{phase}_acc": epoch_acc.item(),
                     "epoch": epoch + 1,
+                    f"{phase}_loss": epoch_loss,
+                    f"{phase}_acc": epoch_acc,
                 })
 
-            # =========================
-            # VALIDATION CHECK
-            # =========================
+            # ---- EARLY STOP + BEST MODEL ONLY ON VALIDATION  ----
             if phase == "val":
-                if epoch_loss < best_val_loss - min_delta:
+                improved = epoch_loss < (best_val_loss - min_delta)
+
+                if improved:
                     best_val_loss = epoch_loss
+                    best_acc = epoch_acc
                     best_model_wts = copy.deepcopy(model.state_dict())
-                    best_acc = epoch_acc.item()
                     epochs_no_improve = 0
 
                     if best_model_path is not None:
                         torch.save(best_model_wts, best_model_path)
+                        print(" Best model saved!")
                 else:
                     epochs_no_improve += 1
+                    print(f" No improvement in validation loss for {epochs_no_improve} epoch(s).")
 
-        # =========================
-        # CHECKPOINT
-        # =========================
-        if checkpoint_path is not None:
-            torch.save(
-                {
-                    "epoch": epoch + 1,
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                },
-                checkpoint_path,
-            )
+                    if epochs_no_improve >= patience:
+                        print(f" Early stopping activated at epoch {epoch+1}")
+                        stop_early = True
 
-        # =========================
-        # EARLY STOPPING
-        # =========================
-        if epochs_no_improve >= patience:
+        if stop_early:
             break
 
     time_elapsed = time.time() - since
+    print(f"\n Training completed in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s")
+    print(f" Best Val Accuracy: {best_acc:.4f}")
+    print(f" Best Val Loss: {best_val_loss:.4f}")
 
     model.load_state_dict(best_model_wts)
 
-    info = {
+    return model, {
         "best_val_loss": best_val_loss,
         "best_acc": best_acc,
-        "time_minutes": time_elapsed / 60,
+        "history": history,
+        "stopped_early": stop_early,
     }
-
-    return model, info
-
